@@ -1,0 +1,24 @@
+# Ignore SVN metadata directories
+.svn/
+
+# Ignore build/output directories (adjust as needed)
+build/
+dist/
+bin/
+obj/
+
+# Ignore editor/IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary files
+*.tmp
+*.bak
+*.swp
