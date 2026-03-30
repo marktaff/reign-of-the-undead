@@ -7,7 +7,7 @@ Do NOT fork/clone it yet, as things will change wildly as I port this to github,
 
 ## Description
 
-RotU was originally written by Bipo (bipolarmonk) for the 1.x series.  Bipo then stopped development, open-sourced his code, and then I wrote the 2.x series.  ROTU-Revolution was independently created by others from Bipo's original code (I started working months earlier, but they made a public annoucement of their intention while I was still hacking in private).  So, they are two separate mods; any code or resources that work together is coincidence.
+RotU was originally written by Bipo (bipolarmonk) for the 1.x series.  Bipo then stopped development, open-sourced his code, and then I wrote the 2.2.x series.  ROTU-Revolution was independently created by others from Bipo's original code (I started working months earlier, but they made a public annoucement of their intention while I was still hacking in private).  So, they are two separate mods; any code or resources that work together is coincidence.
 
 ## Getting Started
 
