@@ -20,7 +20,7 @@ Mapmakers that wish to open-source their maps may use this code repository for t
 
 ## Support
 
-We have created many wiki pages of documentation to help our users make full use of this release. Please read **[Writing Useful Bug Reports](WritingUsefulBugReports)** before submitting any bug reports.
+We have created many wiki pages of documentation to help our users make full use of this release. Please read **[Writing Useful Bug Reports](WritingUsefulBugReports.md)** before submitting any bug reports.
 
 ## Get the Release
 
