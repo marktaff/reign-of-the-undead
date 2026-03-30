@@ -1,5 +1,6 @@
 # Ignore SVN metadata directories
 .svn/
+.code-workspace
 
 # Ignore build/output directories (adjust as needed)
 build/
