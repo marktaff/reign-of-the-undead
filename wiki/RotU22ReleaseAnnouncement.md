@@ -25,7 +25,7 @@ We have created many wiki pages of documentation to help our users make full use
 ## Get the Release
 
 - **Binary version**: Available from the **Downloads** tab.
-- **Source code**: Available using a Subversion client, as explained in **[Setting Up a Development Environment](DevelopmentEnvironment)**.  
+- **Source code**: Available using a Subversion client, as explained in **[Setting Up a Development Environment](DevelopmentEnvironment.md)**.  
   For RotU 2.2, checkout **revision 37**. If you checkout `HEAD`, you will get the current code, including changes made since RotU 2.2 was packaged for release.
 
 ## Known Issues
