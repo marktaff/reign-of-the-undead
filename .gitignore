@@ -6,18 +6,15 @@
 dist/
 bin/
 obj/
-
-# Ignore the entire 'local' folder and everything inside it
-# local/
-# But do NOT ignore the readme.md file inside it
-#!local/readme.md
+# Ignore everything inside build
+/trunk/build/*
+# But do not ignore the build directory itself
+!/trunk/build/
 
 # Track the directory itself
 !/trunk/local/
-
 # Ignore all files inside trunk/local
 /trunk/local/*
-
 # But do not ignore readme.md
 !/trunk/local/readme.md
 
