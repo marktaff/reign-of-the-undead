@@ -6,7 +6,7 @@ I am importing it from the archived Google Code Subversion repo, which is really
 Do NOT fork/clone it yet, as things will change wildly as I port this to github, the best I can. I'm making breaking changes to the build system, but I have successfully gotten CoD4 installed and patched on Linux, and also got the entire RotU mod compiled on Linux. I'll update this message when it is safe to tinker.
 
  - [Installing CoD4 on Kubuntu 25.10](wiki/InstallingCoD4Kubuntu25.10.md)
- - [Setting Up a Development Enironment](wiki/DevelopmentEnvironment.md)
+ - [Setting Up a Development Environment](wiki/DevelopmentEnvironment.md)
 
 ## Description
 

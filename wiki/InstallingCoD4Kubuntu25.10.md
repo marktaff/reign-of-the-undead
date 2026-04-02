@@ -102,8 +102,7 @@ certutil -hashfile [gamepath]/iw3sp.exe MD5
 Issue: Everything was really tiny (4K tv @ 10ft distance).
 
 Sol'n:
-Run winecfg, click emulate a virtual desktop, set resolution to 1920x1080p. Close winecfg.
-In game, select Options-->Graphics.  Set Video Mode to 1080p or 4k (by clicking through).  Set DPI to ~200 (ok for a 65" 4K TV viewed at 10ft).
+Run winecfg, click emulate a virtual desktop, set resolution to 1920x1080p. Set DPI to ~200 (ok for a 65" 4K TV viewed at 10ft).  Close winecfg. In game, select Options-->Graphics.  Set Video Mode to 1080p or 4k (by clicking through).
 
 Issue: Desktop icons empty icons
 
