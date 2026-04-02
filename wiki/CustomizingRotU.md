@@ -8,7 +8,7 @@ Since RotU is open-source software, there are no limits to customization, other 
 ## What Not to Change
   While you have the ability to change everything, there is one thing you cannot do, and several other things we would prefer you not to do.  You may not remove the license header in each `*.gsc` file.  If you add *significantly* to the functionality in a `*.gsc` file, you may feel free to add your copyright to the license header.  Adding 50 SLOC in a 1000 SLOC file is not a significant contribution.  For example:
 ```
-    Copyright (c) 2010-2013 Reign of the Undead Team.
+    Copyright (c) 2010-2026 Reign of the Undead Team.
     See AUTHORS.txt for a listing.
     Copyright (c) 2013 John Q. Public <jpublic@example.com>
 ```
