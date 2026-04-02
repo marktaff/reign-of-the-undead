@@ -31,7 +31,7 @@
 ::     EULA.
 ::******************************************************************************
 
-:: Depends on: being run from the mods\rotudev folder
+:: Depends on: being run from the mods\rotudev folder y
 
 :: Supress output
 @echo off
@@ -44,8 +44,10 @@ cd ..\..\
 ::   developer and developer_script should be 0 for regular games, but must be 1 to use the UMI Editor
 ::   exec server.cfg loads all of the various *.cfg files
 ::   devmap sets the name of the map to load when the server starts
-iw3mp.exe +set fs_game "mods\rotudev" +set sv_punkbuster 0 +set developer 0 +set developer_script 0 +set g_gametype "surv" +exec server.cfg +devmap mp_surv_testmap
+::   N.B. This server's socket (ipaddr:port of the server must be set in server.cfg).
+::   See: PlayingRotULocally.md in the github wiki
+iw3mp.exe +set fs_game "Mods\rotudev" +set sv_punkbuster 0 +set developer 0 +set developer_script 0 +set g_gametype "surv" +exec server.cfg +devmap mp_surv_testmap
 
 :: If we were run from the command line, change back to original folder, so we
 :: are ready to be run again
-cd mods\rotudev
+cd Mods\rotudev

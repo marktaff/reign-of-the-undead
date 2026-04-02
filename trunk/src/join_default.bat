@@ -31,7 +31,7 @@
 ::     EULA.
 ::******************************************************************************
 
-:: Depends on: being run from the mods\rotudev folder
+:: Depends on: being run from the mods\rotudev folder y
 
 :: Supress output
 @echo off
@@ -40,8 +40,10 @@ cd ..\..\
 
 :: Connect to the server
 ::   fs_game sets the name of the mod run
-::   connect contains the IPv4 address the server is listening on
-iw3mp.exe +set fs_game "mods\rotudev" +connect 192.168.1.11
+::   connect contains the IPv4 address the server is listening on.
+::   N.B. This socket (ipaddr:port of the server must be set in server.cfg).
+::   See: PlayingRotULocally.md in the github wiki
+iw3mp.exe +set fs_game "mods\rotudev" +connect 192.168.1.5
 
 :: If we were run from the command line, change back to original folder, so we
 :: are ready to be run again

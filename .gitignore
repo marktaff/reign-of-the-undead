@@ -26,6 +26,7 @@ obj/
 *.log
 *.code-workspace
 .env
+.directory
 _private*
 
 # Ignore OS-specific files

@@ -36,6 +36,7 @@
 use Getopt::Std;
 use Digest::MD5 qw(md5);
 use File::Find;
+use File::Slurp;
 use File::Basename;
 use File::Path qw/make_path/;
 use Cwd 'abs_path';
@@ -90,6 +91,7 @@ sub checksumUnreadable();
 sub updateUploadFolder();
 sub rebuildScriptsOnly();
 sub load_env();
+sub which;
 
 my @files = ();
 my @rawFiles = ();
@@ -118,6 +120,12 @@ my $unusedIncludes = "";
 my %funcDefs = ();
 my %funcKeysByFile = ();
 my %processedFiles = ();
+
+my $bashPath = which('bash') // '/bin/bash';               # default value using the defined-or operator //
+my $pythonPath = which('python3') // '/usr/bin/python3';
+
+print "Bash: ", ($bashPath // 'Not found'), "\n";
+print "Python: ", ($pythonPath // 'Not found'), "\n";
 
 # Set root directory
 my $dir = abs_path("..");
@@ -1021,6 +1029,9 @@ sub clean()
     deleteFile($config{modPath}.'\host.bat');
     deleteFile($config{modPath}.'\join.bat');
     deleteFile($config{modPath}.'\playMod.bat');
+    deleteFile($config{modPath}.'\host.sh');
+    deleteFile($config{modPath}.'\join.sh');
+    deleteFile($config{modPath}.'\playMod.sh');
     foreach my $file (@{$config{configFiles}}) {
         deleteFile($config{modPath}.'\\'.$file);
     }
@@ -1580,13 +1591,39 @@ sub findChanges()
         elsif ($file =~ /\.cfg$/) {
             $installConfig = 1;
         }
-        elsif ($file =~ /(?:playMod|host|join)\.bat$/) {
+        # elsif ($file =~ /(?:playMod|host|join)\.bat$/) {
+        elsif ($file =~ /(?:playMod|host|join)\.(?:bat|sh)$/) {
             $installBatchFiles = 1;
         }
+        # $installBatchFiles = 1;
 
         # Update the map with the new digest
         $map{$key} = $digest;
     }
+}
+
+sub which {
+    my ($program) = @_;
+    my @paths = split(':', $ENV{PATH});
+    
+    foreach my $dir (@paths) {
+        my $full_path = "$dir/$program";
+        # Check if the file exists and is executable
+        if (-x $full_path && -f $full_path) {
+            return $full_path;
+        }
+        # On Windows, executables might have extensions like .exe
+        # Uncomment the following lines if needed:
+        # if ($^O eq 'MSWin32') {
+        #     foreach my $ext (qw(.exe .bat .cmd)) {
+        #         my $full_path_ext = "$full_path$ext";
+        #         if (-x $full_path_ext && -f $full_path_ext) {
+        #             return $full_path_ext;
+        #         }
+        #     }
+        # }
+    }
+    return; # Not found
 }
 
 sub rebuildMod()
@@ -1738,72 +1775,38 @@ sub installConfig()
     }
 }
 
-# sub installConfig()
-# {
-#     if ($installConfig) {
-#         make_path($config{modPath}) unless -d $config{modPath};
-
-#         foreach my $file (@{$config{configFiles}}) {
-#             my $cfg = File::Spec->catfile('..', 'src', $file);
-
-#             # Create default if missing
-#             unless (-e $cfg) {
-#                 my ($base) = $file =~ /^(\w+)/;
-#                 my $default = File::Spec->catfile('..', 'src', $base . '_default.cfg');
-
-#                 if (-f $default) {
-#                     copy($default, $cfg) or die "Failed to create $cfg from default: $!";
-#                     print "Created $file from default\n";
-#                 } else {
-#                     warn "Default file not found: $default\n";
-#                 }
-#             }
-
-#             # Copy to modPath
-#             if (-f $cfg) {
-#                 copy($cfg, File::Spec->catfile($config{modPath}, $file))
-#                     or die "Failed to copy $file to mod folder: $!";
-#             }
-#         }
-
-#         # report "Installed config files to $config{modPath}\n";   # uncomment if desired
-#     } else {
-#         print "We do not need to install config files.\n";
-#     }
-# }
-
-sub installBatchFiles()
-{
+sub installBatchFiles () {
     if ($installBatchFiles) {
         make_path($config{modPath}) unless -d $config{modPath};
 
-        my @batchFiles = ('playMod.bat', 'host.bat', 'join.bat');
+        my @base_files = ('playMod', 'host', 'join');
 
-        foreach my $file (@batchFiles) {
-            my $bat = File::Spec->catfile('..', 'src', $file);
+        foreach my $base (@base_files) {
+            foreach my $ext ('bat', 'sh') {
+                my $default_file = File::Spec->catfile($config{projectPath}, 'trunk', 'src', "$base"."_default.$ext");
+                my $build_file = File::Spec->catfile($config{projectPath}, 'trunk', 'build', "$base.$ext");
+                my $dest_file = $build_file;
 
-            # Create default if missing
-            unless (-e $bat) {
-                my ($base) = $file =~ /^(\w+)/;
-                my $default = File::Spec->catfile('..', 'src', $base . '_default.bat');
-
-                if (-f $default) {
-                    copy($default, $bat) or die "Failed to create $bat from default: $!";
-                    print "Created $file from default\n";
-                } else {
-                    warn "Default file not found: $default\n";
+                # For existing default file, create and copy it to build directory
+                if (-f $default_file) {
+                    if ($ext eq 'sh') {
+                        # Replace shebang in the default file
+                        my $contents = File::Slurp::read_file($default_file);
+                        $contents =~ s|^#!.*$||sm;  # Remove the existing shebang line
+                        $contents = "#!$bashPath\n$contents";  # Append the new shebang line
+                        File::Slurp::write_file($build_file, $contents); 
+                    } else {
+                        copy($default_file, $build_file) or die "Failed to copy $default_file to $build_file: $!";
+                    }
                 }
-            }
 
-            # Copy to modPath
-            if (-f $bat) {
-                copy($bat, File::Spec->catfile($config{modPath}, $file))
-                    or die "Failed to copy $file to mod folder: $!";
-                report "Installed $file to $config{modPath}\n";
+                # Copy build version to modPath
+                copy($build_file, File::Spec->catfile($config{modPath}, $base.$ext)) or die "Failed to copy $build_file to $config{modPath}: $!";
             }
         }
+        print "Installed shell files to $config{modPath}\n";
     } else {
-        print "We do not need to install batch files.\n";
+        print "We do not need to install shell files.\n";
     }
 }
 
