@@ -187,7 +187,7 @@
         CHOICE_BUTTON_VIS( 10, "@MENU_QUIT", open quit_popmenu;, when( !localvarBool( ui_hideBack ) ) )
 
         // Official RotU website box
-        CHOICE_FOOTNOTE_VIS( "Reign of the ^1Undead^7 Website: code.google.com/p/reign-of-the-undead/", 40, 420, when( !localvarBool( ui_hideBack ) ) )
+        CHOICE_FOOTNOTE_VIS( "Reign of the ^1Undead^7 Website: github.com/marktaff/reign-of-the-undead", 40, 420, when( !localvarBool( ui_hideBack ) ) )
     }
 
     #include "ui_mp/popupstyle.inc"
@@ -249,7 +249,7 @@
         CHOICE_SECTION_TITLE( 6, "Contributors:" )
         CHOICE_SUBTEXT_COLOR_VIS( 7, "                           BraX, Mr-X, Etheross, Hacker 22,", textcolor, 1 )
         CHOICE_SUBTEXT_COLOR_VIS( 8, "                           Viking, Coverop", textcolor, 1 )
-        CHOICE_SUBTEXT_COLOR_VIS( 9, "Website: code.google.com/p/reign-of-the-undead/", textcolor, 1 )
+        CHOICE_SUBTEXT_COLOR_VIS( 9, "Website: github.com/marktaff/reign-of-the-undead", textcolor, 1 )
     }
 
 
