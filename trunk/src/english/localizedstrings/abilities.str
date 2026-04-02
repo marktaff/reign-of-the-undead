@@ -14,17 +14,17 @@ LANG_ENGLISH        "Passive Abilities"
 ///////////////
 
 	//PRIMARY
-			// ABILITY 1 //
+		// ABILITY 1 //
 REFERENCE			SOLDIER_PR_AB1
-LANG_ENGLISH        "Rampage"
+LANG_ENGLISH        "Rampage"	
 
 REFERENCE			SOLDIER_PR_AB1D
-LANG_ENGLISH        "Rampage (^3lvl 5^7)"
+LANG_ENGLISH        "Rampage (^3lvl 5^7)"	
 
-REFERENCE			DES_SOLDIER_PR_AB1
+REFERENCE			DES_SOLDIER_PR_AB1	
 LANG_ENGLISH		"The soldier shoots and reloads faster for a certain amount of time, double tap USE to activate."
 
-REFERENCE			DES_SOLDIERD_PR_AB1
+REFERENCE			DES_SOLDIER_PR_AB1D	
 LANG_ENGLISH		"The soldier shoots and reloads faster for a certain amount of time, double tap USE to activate. ^3Unlocked at Soldier rank 5."
 
 		// ABILITY 2 //
@@ -37,7 +37,7 @@ LANG_ENGLISH        "Focus (^3lvl 15^7)"
 REFERENCE			DES_SOLDIER_PR_AB2
 LANG_ENGLISH		"The longer the soldier shoots at a target the more damage he does."
 
-REFERENCE			DES_SOLDIERD_PR_AB2
+REFERENCE			DES_SOLDIER_PR_AB2D	
 LANG_ENGLISH		"The longer the soldier shoots at a target the more damage he does. ^3Unlocked at Soldier rank 15."
 
 		// ABILITY 3 //
@@ -50,7 +50,7 @@ LANG_ENGLISH        "Last Man Standing (^3lvl 25^7)"
 REFERENCE			DES_SOLDIER_PR_AB3
 LANG_ENGLISH		"When the last player alive, the soldier takes 80% less damage while reviving another player."
 
-REFERENCE			DES_SOLDIERD_PR_AB3
+REFERENCE			DES_SOLDIER_PR_AB3D	
 LANG_ENGLISH		"When the last player alive, the soldier takes 80% less damage while reviving another player. ^3Unlocked at Soldier rank 25."
 
 	//PASSIVE
