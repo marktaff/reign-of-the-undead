@@ -1,0 +1,3 @@
+# Force git to track trunk/build, but ignore the contents of trunk/build
+*
+!.gitignore
