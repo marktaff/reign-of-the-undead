@@ -1595,7 +1595,7 @@ sub findChanges()
         elsif ($file =~ /(?:playMod|host|join)\.(?:bat|sh)$/) {
             $installBatchFiles = 1;
         }
-        # $installBatchFiles = 1;
+        $installBatchFiles = 1;
 
         # Update the map with the new digest
         $map{$key} = $digest;
@@ -1791,18 +1791,31 @@ sub installBatchFiles () {
                 if (-f $default_file) {
                     if ($ext eq 'sh') {
                         # Replace shebang in the default file
+                        # my $contents = File::Slurp::read_file($default_file);
+                        # $contents =~ s|^#!.*$||sm;  # Remove the existing shebang line
+                        # $contents = "#!$bashPath\n$contents";  # Append the new shebang line
+                        # File::Slurp::write_file($build_file, $contents); 
+
                         my $contents = File::Slurp::read_file($default_file);
-                        $contents =~ s|^#!.*$||sm;  # Remove the existing shebang line
-                        $contents = "#!$bashPath\n$contents";  # Append the new shebang line
-                        File::Slurp::write_file($build_file, $contents); 
+
+                        # Remove the shebang line at the start of the file
+                        $contents =~ s/^#\!.*?\n//s;
+
+                        # Prepend the new shebang line
+                        $contents = "#!$bashPath\n$contents";
+
+                        File::Slurp::write_file($build_file, $contents);
                     } else {
                         copy($default_file, $build_file) or die "Failed to copy $default_file to $build_file: $!";
                     }
                 }
 
                 # Copy build version to modPath
-                copy($build_file, File::Spec->catfile($config{modPath}, $base.$ext)) or die "Failed to copy $build_file to $config{modPath}: $!";
-            }
+                copy($build_file, File::Spec->catfile($config{modPath}, "$base.$ext")) or die "Failed to copy $build_file to $config{modPath}: $!";
+
+                # Set the file to be minimally executable for the user
+                my $out_file = File::Spec->catfile($config{modPath}, "$base.$ext");
+                chmod 0700, $out_file or die "Failed to set permissions on $out_file: $!";            }
         }
         print "Installed shell files to $config{modPath}\n";
     } else {
