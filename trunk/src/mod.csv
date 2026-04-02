@@ -270,17 +270,17 @@ rawfile,shock/boss.shock
 rawfile,shock/default_mp.shock
 
 
-material,bx_teleporter_edge
-material,bx_teleporter_energy
-material,bx_teleporter_main
-material,bx_teleporter_pad
-material,bx_teleporter_transparency
+#material,bx_teleporter_edge
+#material,bx_teleporter_energy
+#material,bx_teleporter_main
+#material,bx_teleporter_pad
+#material,bx_teleporter_transparency
 
 xmodel,bx_teleporter
 
 rawfile,shock/teleporter.shock
 rawfile,shock/zombiedamage.shock
-fx,explosions/grenadeExp_metal
+fx,explosions/grenadeExp_metal 
 material,objpoint_bomb
 fx,impacts/flesh_hit_body_nonfatal
 fx,fire/firelp_med_pm
@@ -288,7 +288,6 @@ fx,fire/firelp_small_pm_rotu
 xmodel,german_sheperd_dog
 material,bx_medkit_skin
 xmodel,bx_medkit
-
 
 rawfile,vision/icbm_launch.vision
 rawfile,vision/inferno.vision
@@ -301,6 +300,7 @@ xmodel,com_barrel_benzin
 xmodel,com_barrel_biohazard
 xmodel,com_barrel_blue_rust
 xmodel,weapon_saw_MG_setup
+
 fx,weather/lightning
 fx,fire/emb_burst_a
 fx,misc/fumes
@@ -331,7 +331,6 @@ material,hud_lowhp
 xmodel,mw2_mp5k_viewmodel
 xmodel,mw2_mp5k_worldmodel
 xmodel,mw2_mp5k_worldmodel_silencer
-
 
 material,icon_down
 material,icon_admin

@@ -1,9 +1,9 @@
-#!C:\strawberry\perl\bin\perl
+#!/usr/bin/perl
 
 #******************************************************************************
-#     Reign of the Undead, v2.x
+#     Reign of the Undead, v2.2.x 
 #
-#     Copyright (c) 2010-2013 Reign of the Undead Team.
+#     Copyright (c) 2010-2026 Reign of the Undead Team.
 #     See AUTHORS.txt for a listing.
 #
 #     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,10 +39,18 @@ use File::Find;
 use File::Basename;
 use File::Path qw/make_path/;
 use Cwd 'abs_path';
+use File::Path qw(make_path);
+use File::Copy::Recursive qw(dircopy fcopy);
+use File::Copy qw(copy);
+use File::Spec;
+use File::Basename;
+use File::Path qw(remove_tree);
+use File::Spec;
+use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
-# Source the make configuration
-unless (-e 'makeConfig.pl') {die "You first need to save a copy of makeConfig.default as makeConfig.pl, the edit makeConfig.pl as required.\n";}
-my %config = do 'makeConfig.pl';
+# Source the .env configuration
+unless (-e '../../.env') {die "You first need to save a copy of env.sample.txt as [project_root]/.env then edit .env as required.\n";}
+
 my %map = ();
 
 my $rebuild2D = 0;
@@ -57,9 +65,6 @@ my $rebuildMod = 0;
 my $needToUpdateChecksums = 0;
 my $installConfig = 0;
 my $installBatchFiles = 0;
-
-# use strict;
-# use warnings;
 
 # Pre-declare subroutines
 sub loadFiles();
@@ -84,6 +89,7 @@ sub release();
 sub checksumUnreadable();
 sub updateUploadFolder();
 sub rebuildScriptsOnly();
+sub load_env();
 
 my @files = ();
 my @rawFiles = ();
@@ -117,6 +123,37 @@ my %processedFiles = ();
 my $dir = abs_path("..");
 my $checksumFile = "$dir/build/checksums.txt";
 
+
+# Ugly, but works. Later, we can just use $ENV{COD_PATH} directly inline
+load_env();
+sub load_env()
+{
+    my $env_file = shift // '../../.env';
+    open my $fh, '<', $env_file or die "Cannot open $env_file: $!";
+    while (my $line = <$fh>) {
+        chomp $line;
+        $line =~ s/^\s+|\s+$//g;  # trim whitespace
+        next if $line =~ /^\s*$/; # skip blank lines
+        next if $line =~ /^\s*#/; # skip comments
+        if ($line =~ /^([^=]+)=(.*)$/) {
+            my ($key, $value) = ($1, $2);
+            $key =~ s/^\s+|\s+$//g;
+            $value =~ s/^\s+|\s+$//g;
+            $ENV{$key} = $value;
+        }
+    }
+    close $fh;
+}
+my %config = (
+    codPath     => $ENV{COD_PATH},
+    modPath     => $ENV{MOD_PATH},
+    uploadPath     => $ENV{UPLOAD_PATH},
+    releasePath     => $ENV{RELEASE_PATH},
+    workPath     => $ENV{WORK_PATH},
+    buildTarget => $ENV{BUILD_TARGET},
+    projectPath => $ENV{PROJECT_PATH},
+    configFiles => [ split /,/, $ENV{CONFIG_FILES} // '' ],   # ← Note the square brackets    
+);
 
 # Process command line args
 getopts('fcqhvsdr:'); # all boolean switches, except r, which takes a parameter
@@ -196,8 +233,8 @@ sub release()
     report "Copied config files to $folder\n";
 
     # Copy batch files from svn working copy
-    my @files = ("playMod.bat", "host.bat", "join.bat");
-    foreach $file (@files) {
+    my @bfiles = ("playMod.bat", "host.bat", "join.bat");
+    foreach $file (@bfiles) {
         $defaultfile = $file;
         $defaultfile =~ s/.bat/_default.bat/;
         $cmd = 'copy /y'.' "'.$config{workPath}.'\\'.$defaultfile.'" "'.$folder.'\\'.$file.'"';
@@ -207,8 +244,8 @@ sub release()
     report "Copied batch files to $folder\n";
 
     # Copy text files from svn working copy
-    my @files = ("AUTHORS.txt", "CHANGELOG.txt", "LICENSE.txt", "README.txt");
-    foreach $file (@files) {
+    my @tfiles = ("AUTHORS.txt", "CHANGELOG.txt", "LICENSE.txt", "README.txt");
+    foreach $file (@tfiles) {
         $cmd = 'copy /y'.' "'.$config{workPath}.'\\'.$file.'" "'.$folder.'\\'.$file.'"';
         # for robocopy, a byte-shifted return code of 3 or less is success
         system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
@@ -287,7 +324,8 @@ sub release()
     report "Copied mod.ff to $folder\n";
 
     # Build a debug version of rotu_svr_scripts
-    my $cmd = 'perl makeMod.pl -sd';
+    # my $cmd = 'perl makeMod.pl -sd';
+    $cmd = 'perl makeMod.pl -sd';
     system($cmd) == 0 or die "system $cmd failed: $?";
 
     # Copy debug version of rotu_svr_scripts
@@ -477,7 +515,8 @@ sub quality()
         $file =~ /.*\/src\/(.*)/;
         my $relFile = $1;
         $relFile =~ s!/!\\!g;
-        unless ($relFile ~~ @sorted) {
+        # unless ($relFile ~~ @sorted) {
+        unless ($relFile eq @sorted) {
             # add some exceptions; don't count these as deprecated
             unless ($relFile eq 'maps\mp\_load.gsc' or
                     $relFile eq 'maps\mp\gametypes\dm.gsc' or
@@ -1057,7 +1096,7 @@ sub version()
 {
     print "\n";
     print "  makeMod.pl - Builds the Reign of the Undead Call of Duty Mod\n";
-    print "               Copyright (c) 2013 Mark A. Taff <mark\@marktaff.com>\n";
+    print "               Copyright (c) 2013-2026 Mark A. Taff <mark\@marktaff.com>\n";
     print "               Version 0.97 Licensed under the MIT License.\n"
 }
 
@@ -1094,99 +1133,67 @@ sub help()
 
 sub updateUploadFolder()
 {
-    unless (-d $config{uploadPath}) {make_path($config{uploadPath});}
+    # Ensure the upload directory exists
+    make_path($config{uploadPath}) unless -d $config{uploadPath};
 
     print "Updating the upload folder...\n";
 
-    my $copyCmd = 'robocopy ';
-    my $switches = '/E /COPYALL /NFL /NDL /NJH  /NJS ';
-    my $cmd = "";
-    my $file = "";
+    my $mod_path   = $config{modPath};
+    my $upload_path = $config{uploadPath};
 
+    # Helper to copy a single file (with nice reporting)
+    my $copy_file = sub {
+        my ($filename) = @_;
+
+        my $src = File::Spec->catfile($mod_path, $filename);
+        my $dst = File::Spec->catfile($upload_path, $filename);
+
+        if (-f $src) {
+            copy($src, $dst) 
+                or die "Failed to copy $filename to upload folder: $!";
+
+            report "Copied $filename to $upload_path\n";
+        } else {
+            warn "Warning: $filename not found in $mod_path (skipping)\n";
+        }
+    };
+
+    # === Copy IWD files when needed ===
     if ($rebuildServerScripts) {
-        # Copy rotu_svr_scripts.iwd over
-        $file = 'rotu_svr_scripts.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied rotu_svr_scripts.iwd to $config{uploadPath}\n";
+        $copy_file->('rotu_svr_scripts.iwd');
     }
     if ($rebuildServerCustom) {
-        # Copy rotu_svr_custom.iwd over
-        $file = 'rotu_svr_custom.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied rotu_svr_custom.iwd to $config{uploadPath}\n";
+        $copy_file->('rotu_svr_custom.iwd');
     }
     if ($rebuildCustomIwd) {
-        # Copy yz_custom.iwd over
-        $file = 'yz_custom.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied yz_custom.iwd to $config{uploadPath}\n";
+        $copy_file->('yz_custom.iwd');
     }
     if ($rebuildCustomMapsIwd) {
-        # Copy rotu_svr_mapdata.iwd over
-        $file = 'rotu_svr_mapdata.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied rotu_svr_mapdata.iwd to $config{uploadPath}\n";
+        $copy_file->('rotu_svr_mapdata.iwd');
     }
     if ($rebuildSound) {
-        # Copy sound.iwd over
-        $file = 'sound.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied sound.iwd to $config{uploadPath}\n";
+        $copy_file->('sound.iwd');
     }
     if ($rebuild2D) {
-        # Copy 2d.iwd over
-        $file = '2d.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied 2d.iwd to $config{uploadPath}\n";
+        $copy_file->('2d.iwd');
     }
     if ($rebuildWeapons) {
-        # Copy weapons.iwd over
-        $file = 'weapons.iwd ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied weapons.iwd to $config{uploadPath}\n";
+        $copy_file->('weapons.iwd');
     }
     if ($rebuildMod) {
-        # Copy mod.ff over
-        $file = 'mod.ff ';
-        $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 3 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-        report "Copied mod.ff to $config{uploadPath}\n";
+        $copy_file->('mod.ff');
     }
+
+    # === Copy config files when needed ===
     if ($installConfig) {
-        # Copy over all the config files
         foreach my $file (@{$config{configFiles}}) {
-            $cmd = $copyCmd.' "'.$config{modPath}.'" "'.$config{uploadPath}.'" '.$file.' '.$switches;
-            $cmd =~ s!\\!\/!g;
-            # for robocopy, a byte-shifted return code of 3 or less is success
-            system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-            report "Copied $file to $config{uploadPath}\n";
+            $copy_file->($file);
         }
     }
 
+    print "Upload folder update completed.\n";
 }
+
 sub checksumUnreadable()
 {
     print "Checksum file is unreadable, doing a full build.\n";
@@ -1321,29 +1328,43 @@ sub buildNonDebugScriptFile
 
 sub deleteFile
 {
-    my $file = $_[0];
-#     print "$file\n";
-    unless (-e $file) {return;}
-#     print "deleting file\n";
-    my $cmd = 'del "'.$file.'"';
-#     $cmd =~ s!\\!\/!g;
-    system($cmd) == 0 or die "system $cmd failed: $?";
+    my ($file) = @_;
+
+    return unless defined $file && -e $file;
+
+    if (-f $file || -l $file) {
+        unlink($file) or die "Failed to delete file '$file': $!\n";
+    } else {
+        warn "deleteFile() called on a directory: $file (use remove_tree instead)\n";
+    }
 }
 
 sub prepareNonDebugBuild()
 {
     my $cwd = Cwd::cwd();
-    my $folder = 'non_debug\scripts';
-    $folder =~ s!\/!\\!g;
-    if (-d $folder) {
-        my $cmd = 'rd /S /Q '.$folder;
-        system($cmd) == 0 or die "system $cmd failed: $?";
+
+    # Use proper cross-platform path handling
+    my $non_debug_dir = File::Spec->catdir('non_debug', 'scripts');
+
+    # Remove the non_debug/scripts directory if it exists (like rd /S /Q)
+    if (-d $non_debug_dir) {
+        remove_tree($non_debug_dir, { 
+            safe => 1,      # don't follow symlinks outside
+            keep_root => 0  # remove the directory itself
+        }) or warn "Failed to remove $non_debug_dir: $!\n";
     }
 
-    my $path = '..\src\scripts';
-    $path  =~ s!\\!\/!g;
-    # Walk the directory tree
-    find(\&selectScriptFiles,"$path");
+    # Create the directory fresh (clean state)
+    make_path($non_debug_dir) or die "Failed to create $non_debug_dir: $!";
+
+    # Original path to source scripts (cross-platform)
+    my $source_path = File::Spec->catdir('..', 'src', 'scripts');
+
+    print "Preparing non-debug scripts from $source_path ...\n";
+
+    # Walk the directory tree and process script files
+    # (assuming your &selectScriptFiles subroutine already exists)
+    find(\&selectScriptFiles, $source_path);
 }
 
 # Find *.gsc files in scripts folder
@@ -1358,254 +1379,311 @@ sub selectScriptFiles()
 
 sub buildIwdFiles()
 {
-    my $cwd = Cwd::cwd();
-    # @bug Do NOT use the -r switch for 7za.  It does NOT recurse directories, it
-    # filters all folders that match, regardless of their location in the tree!
-    my $zipCmd = $cwd.'/7za.exe a -tzip -xr!?svn ';
-    my $archive = "";
-    my $folders = "";
-    my $cmd = "";
-    my $nonDebugFilename = "";
-    my $debugFilename = "";
+    print "Building IWD files...\n";
 
+    my $cwd = Cwd::cwd();
+
+    # Helper: build one IWD while preserving the source folder name inside the archive
+    my $build_iwd = sub {
+        my ($archive_name, $source_folders, $description) = @_;
+
+        my $archive_path = File::Spec->catfile($config{modPath}, $archive_name);
+
+        # Ensure the output directory exists (creates all parent dirs if needed)
+        my $output_dir = File::Spec->catdir($config{modPath});
+        make_path($output_dir) unless -d $output_dir;
+
+        # Safe delete (ignore error if file doesn't exist yet)
+        deleteFile($archive_path) if -e $archive_path;
+
+        my $zip = Archive::Zip->new();
+
+        my $added_something = 0;
+
+        foreach my $rel_folder (@$source_folders) {
+            my $full_path = File::Spec->rel2abs($rel_folder, $cwd);
+
+            if (-d $full_path) {
+                # Get the last directory name (e.g. "images", "scripts", "sound")
+                my ($volume, $dirs, $basename) = File::Spec->splitpath($full_path);
+                $basename =~ s{[\\/]$}{};   # remove any trailing slash
+
+                # Filter to skip .svn directories (correct usage: $_ holds the path)
+                my $filter = sub { $_ !~ m{/\.svn/}i };
+
+                my $status = $zip->addTree($full_path, $basename, $filter);
+
+                if ($status != AZ_OK) {
+                    die "Failed to add $full_path to $archive_name: $status\n";
+                }
+
+                $added_something = 1;
+            } else {
+                warn "Warning: Source folder not found: $full_path\n";
+            }
+        }
+
+        if (!$added_something) {
+            warn "Warning: No folders were added for $archive_name\n";
+            return;
+        }
+
+        # Optional: better compression (uncomment if you want max compression)
+        # $zip->desiredCompressionLevel(9);
+
+        my $status = $zip->writeToFileNamed($archive_path);
+        if ($status != AZ_OK) {
+            die "Failed to write $archive_name: $status\n";
+        }
+
+        report "Rebuilt $description\n";
+    };
+
+    # ====================== Server Scripts ======================
     if ($rebuildServerScripts) {
-        if ($opt_d){ # make debug version of server scripts
-            $archive = $config{modPath}.'\rotu_svr_scripts.iwd';
-            deleteFile($archive);
-            $folders = '..\src\custom_scripts ..\src\maps ..\src\scripts';
-            $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-            $cmd =~ s!\\!\/!g;
-            system($cmd) == 0 or die "system $cmd failed: $?";
-            report "Rebuilt debug version of rotu_svr_scripts.iwd\n";
-        } else { # make non-debug version of server scripts
+        if ($opt_d) {   # debug version
+            my @folders = ('../src/custom_scripts', '../src/maps', '../src/scripts');
+            $build_iwd->('rotu_svr_scripts.iwd', \@folders, "debug version of rotu_svr_scripts.iwd");
+        } else {        # non-debug
             prepareNonDebugBuild();
-            $archive = $config{modPath}.'\rotu_svr_scripts.iwd';
-            deleteFile($archive);
-            $folders = '..\src\custom_scripts ..\src\maps .\non_debug\scripts';
-            $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-            $cmd =~ s!\\!\/!g;
-            system($cmd) == 0 or die "system $cmd failed: $?";
-            report "Rebuilt non-debug version of rotu_svr_scripts.iwd\n";
+            my @folders = ('../src/custom_scripts', '../src/maps', './non_debug/scripts');
+            $build_iwd->('rotu_svr_scripts.iwd', \@folders, "non-debug version of rotu_svr_scripts.iwd");
         }
     } else {
         print "We do not need to rebuild rotu_svr_scripts.iwd\n";
     }
+
+    # ====================== Server Custom ======================
     if ($rebuildServerCustom) {
-        $archive = $config{modPath}.'\rotu_svr_custom.iwd';
-        deleteFile($archive);
-        $folders = '..\src\custom_scripts ..\src\animtrees';
-        $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-        $cmd =~ s!\\!\/!g;
-        system($cmd) == 0 or die "system $cmd failed: $?";
-        report "Rebuilt rotu_svr_custom.iwd\n";
+        my @folders = ('../src/custom_scripts', '../src/animtrees');
+        $build_iwd->('rotu_svr_custom.iwd', \@folders, "rotu_svr_custom.iwd");
     } else {
         print "We do not need to rebuild rotu_svr_custom.iwd\n";
     }
+
+    # ====================== Custom IWD ======================
     if ($rebuildCustomIwd) {
-        $archive = $config{modPath}.'\yz_custom.iwd';
-        deleteFile($archive);
-        $folders = '..\src\custom\images ..\src\custom\sound';
-        $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-        $cmd =~ s!\\!\/!g;
-        system($cmd) == 0 or die "system $cmd failed: $?";
-        report "Rebuilt yz_custom.iwd\n";
+        my @folders = ('../src/custom/images', '../src/custom/sound');
+        $build_iwd->('yz_custom.iwd', \@folders, "yz_custom.iwd");
     } else {
         print "We do not need to rebuild yz_custom.iwd\n";
     }
+
+    # ====================== Map Data ======================
     if ($rebuildCustomMapsIwd) {
-        $archive = $config{modPath}.'\rotu_svr_mapdata.iwd';
-        deleteFile($archive);
-        $folders = '..\src\custom_maps\maps';
-        $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-        $cmd =~ s!\\!\/!g;
-        system($cmd) == 0 or die "system $cmd failed: $?";
-        report "Rebuilt rotu_svr_mapdata.iwd\n";
+        my @folders = ('../src/custom_maps/maps');
+        $build_iwd->('rotu_svr_mapdata.iwd', \@folders, "rotu_svr_mapdata.iwd");
     } else {
         print "We do not need to rebuild rotu_svr_mapdata.iwd\n";
     }
+
+    # ====================== Sound ======================
     if ($rebuildSound) {
-        $archive = $config{modPath}.'\sound.iwd';
-        deleteFile($archive);
-        $folders = '..\src\sound';
-        $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-        $cmd =~ s!\\!\/!g;
-        system($cmd) == 0 or die "system $cmd failed: $?";
-        report "Rebuilt sound.iwd\n";
+        my @folders = ('../src/sound');
+        $build_iwd->('sound.iwd', \@folders, "sound.iwd");
     } else {
         print "We do not need to rebuild sound.iwd\n";
     }
+
+    # ====================== 2D Images ======================
     if ($rebuild2D) {
-        $archive = $config{modPath}.'\2d.iwd';
-        deleteFile($archive);
-        $folders = '..\src\images';
-        $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-        $cmd =~ s!\\!\/!g;
-        system($cmd) == 0 or die "system $cmd failed: $?";
-        report "Rebuilt 2d.iwd\n";
+        my @folders = ('../src/images');
+        $build_iwd->('2d.iwd', \@folders, "2d.iwd");
     } else {
         print "We do not need to rebuild 2d.iwd\n";
     }
+
+    # ====================== Weapons ======================
     if ($rebuildWeapons) {
-        $archive = $config{modPath}.'\weapons.iwd';
-        deleteFile($archive);
-        $folders = '..\src\weapons';
-        $cmd = $zipCmd.'"'.$archive.'" '.$folders;
-        $cmd =~ s!\\!\/!g;
-        system($cmd) == 0 or die "system $cmd failed: $?";
-        report "Rebuilt weapons.iwd\n";
+        my @folders = ('../src/weapons');
+        $build_iwd->('weapons.iwd', \@folders, "weapons.iwd");
     } else {
         print "We do not need to rebuild weapons.iwd\n";
     }
-
 }
 
 sub findChanges()
 {
     print "Looking for changed files...\n";
 
-    # Walk the directory tree
-    loadFiles();
+    loadFiles();                    # populates @files I assume
 
-    my $key = "";
-    my $digest = "";
-
-    # Read in all the saved checksum data
-    open(C,"<$checksumFile") or die "Unable to open check file $checksumFile:$!\n";
-    while (<C>){
+    # Read in all the saved checksum data:  filename => digest
+    %map = ();                      # clear it first to be safe
+    open(C, "<", $checksumFile) or die "Unable to open $checksumFile: $!\n";
+    while (<C>) {
         chomp;
-        my @record = split('\|');
-        $map{$record[0]} = $record[1];
-#         $map{@record[0]} = @record[1];
+        my ($filename, $old_digest) = split(/\|/, $_, 2);
+        next unless defined $filename && defined $old_digest;
+        $map{$filename} = $old_digest;
     }
     close(C);
 
-    foreach (@files) {
-        open(F,$_) or die "Unable to open $_:$!\n";
-        $key = Digest::MD5->new->add($_)->hexdigest;
-        $digest = Digest::MD5->new->addfile(F)->hexdigest;
+    foreach my $file (@files) {
+        next unless -f $file;       # skip if not a regular file
 
-        # @todo handle new and/or removed files
-        if ($map{$key} eq $digest) {
-            # The files hasn't changed, so skip it
+        open(my $F, "<", $file) or do {
+            warn "Unable to open $file: $!\n";
             next;
-        } else {
-            # ignore changes to checksumFile
-            next if (m/.*checksum.*/);
+        };
 
-            print "Found changed file: $_\n";
-            $needToUpdateChecksums = 1;
+        # Compute current content digest
+        my $digest = Digest::MD5->new->addfile($F)->hexdigest;
+        close($F);
 
-            # What parts do we have to rebuild?
-            if (m/.*\/maps\/.*/ or m/.*\/scripts\/.*/) {
-                $rebuildServerScripts = 1;
-                $rebuildCustomMapsIwd = 1;
-            } elsif (m/.*\/custom\/.*/) {
-                $rebuildCustomIwd = 1;
-            } elsif (m/.*\/custom_scripts\/.*/ or m/.*\/animtrees\/.*/) {
-                $rebuildServerScripts = 1;
-                $rebuildServerCustom = 1;
-            } elsif (m/.*\/images\/.*/) {
-                $rebuild2D = 1;
-                $rebuildMod = 1;
-            } elsif (m/.*\/weapons\/.*/) {
-                $rebuildWeapons = 1;
-                $rebuildMod = 1;
-            } elsif (m/.*\/sound\/.*/) {
-                $rebuildSound = 1;
-                $rebuildMod = 1;
-            } elsif (m/.*\/ui_mp\/.*/ or
-                     m/.*\/mp\/.*/ or
-                     m/.*\/english\/.*/ or
-                     m/.*\/soundaliases\/.*/ or
-                     m/.*\/xanim\/.*/ or
-                     m/.*\/xmodel\/.*/ or
-                     m/.*\/xmodelparts\/.*/ or
-                     m/.*\/xmodelsurfs\/.*/ or
-                     m/.*\/materials\/.*/ or
-                     m/.*\/material\/.*/ or
-                     m/.*\/material_properties\/.*/ or
-                     m/.*\/fx\/.*/ or
-                     m/.*\/shock\/.*/ or
-                     m/.*\/vision\/.*/ or
-                     m/.*mod.csv/)
-            {
-                $rebuildMod = 1;
-            } elsif (m/.*\.cfg/) {
-                $installConfig = 1;
-            } elsif (m/.*playMod.bat/ or
-                     m/.*host.bat/ or
-                     m/.*join.bat/)
-            {
-                $installBatchFiles = 1;
-            }
+        # Use the actual filename as the key (much more sensible!)
+        my $key = $file;
 
-            # Now update the hash
-            $map{$key} = $digest;
+        # print "$file | old: " . ($map{$key} // '(new file)') . 
+            #   " | new: $digest\n";
+
+        if (exists $map{$key} && $map{$key} eq $digest) {
+            # File hasn't changed
+            next;
         }
-#         print C "$key|$digest","\n";
+
+        # --- File is new or has changed ---
+
+        # ignore changes to the checksum file itself
+        next if $file =~ /checksum/;
+
+        # print "Found changed file: $file\n";
+        $needToUpdateChecksums = 1;
+
+        # Determine what needs rebuilding
+        if ($file =~ m{/maps/|/scripts/}) {
+            $rebuildServerScripts = 1;
+            $rebuildCustomMapsIwd = 1;
+        }
+        elsif ($file =~ m{/custom/}) {
+            $rebuildCustomIwd = 1;
+        }
+        elsif ($file =~ m{/custom_scripts/|/animtrees/}) {
+            $rebuildServerScripts = 1;
+            $rebuildServerCustom = 1;
+        }
+        elsif ($file =~ m{/images/}) {
+            $rebuild2D = 1;
+            $rebuildMod = 1;
+        }
+        elsif ($file =~ m{/weapons/}) {
+            $rebuildWeapons = 1;
+            $rebuildMod = 1;
+        }
+        elsif ($file =~ m{/sound/}) {
+            $rebuildSound = 1;
+            $rebuildMod = 1;
+        }
+        elsif ($file =~ m{/ui_mp/|/mp/|/english/|/soundaliases/|/xanim/|/xmodel/|/xmodelparts/|/xmodelsurfs/|/materials?/|/fx/|/shock/|/vision/|mod\.csv}) {
+            $rebuildMod = 1;
+        }
+        elsif ($file =~ /\.cfg$/) {
+            $installConfig = 1;
+        }
+        elsif ($file =~ /(?:playMod|host|join)\.bat$/) {
+            $installBatchFiles = 1;
+        }
+
+        # Update the map with the new digest
+        $map{$key} = $digest;
     }
-
 }
-
 
 sub rebuildMod()
 {
     if ($rebuildMod) {
         print "Copying files as required so we can build mod.ff...\n";
-        my $source = "";
-        my $destination = "";
-        my $cmd = "";
-        my $file = "";
-        my $path = "";
 
-        my $copyCmd = 'robocopy ';
-        my $switches = '/E /COPYALL /NFL /NDL /NJH  /NJS ';
-        my $excludeDirs = '/XD .svn ';
+        # Ensure destination directories exist first
+        make_path($config{codPath} . '/raw')   unless -d $config{codPath} . '/raw';
+        make_path($config{codPath} . '/zone_source') unless -d $config{codPath} . '/zone_source';
+        make_path($config{codPath} . '/zone/english') unless -d $config{codPath} . '/zone/english';  # for later mod.ff copy
 
-        my @folders = ('\ui_mp', '\mp', '\maps', '\animtrees', '\english', '\soundaliases',
-                    '\xanim', '\xmodel', '\xmodelparts', '\xmodelsurfs', '\materials',
-                    '\material_properties', '\fx', '\shock', '\vision', '\images',
-                    '\sound', '\weapons');
+        my @folders = ('ui_mp', 'mp', 'maps', 'animtrees', 'english', 'soundaliases',
+                       'xanim', 'xmodel', 'xmodelparts', 'xmodelsurfs', 'materials',
+                       'material_properties', 'fx', 'shock', 'vision', 'images',
+                       'sound', 'weapons');
+
         foreach my $folder (@folders) {
-            $destination = ' "'.$config{codPath}.'\raw'.$folder.'" ';
-            $source = '..\src'.$folder;
-            $cmd = $copyCmd.$source.$destination.$switches.$excludeDirs;
-            $cmd =~ s!\\!\/!g;
-            # for robocopy, a byte-shifted return code of 2 or less is success
-            system($cmd) / 256 <= 3 or die "system $cmd failed: $?"
+            my $source      = File::Spec->catdir('..', 'src', $folder);
+            my $destination = File::Spec->catdir($config{codPath}, 'raw', $folder);
+
+            make_path($destination) unless -d $destination;
+
+            if (-d $source) {
+                # dircopy returns number of files copied; it skips .svn by default in recent versions
+                my $count = dircopy($source, $destination);
+                print "Copied $count files from $folder\n" if $count;
+            } else {
+                warn "Warning: Source folder not found: $source\n";
+            }
         }
 
-        # Copy mod.csv over
-        $source = '..\src';
-        $file = '\mod.csv';
-        $destination = ' "'.$config{codPath}.'\zone_source\"';
-        $cmd = 'copy /Y '.$source.$file.' '.$destination;
-        system($cmd) == 0 or die "system $cmd failed: $?";
+        # Copy mod.csv
+        my $mod_csv_src = File::Spec->catfile('..', 'src', 'mod.csv');
+        my $mod_csv_dst = File::Spec->catfile($config{codPath}, 'zone_source', 'mod.csv');
+        make_path(File::Spec->catdir($config{codPath}, 'zone_source')) unless -d _;
+        copy($mod_csv_src, $mod_csv_dst) or warn "Failed to copy mod.csv: $!";
 
-        # Copy zone_source\*.csv files over
-        $source = '..\src\zone_source ';
-        $destination = ' "'.$config{codPath}.'\zone_source" ';
-        $cmd = $copyCmd.$source.$destination.$switches.$excludeDirs;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 2 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
+        # Copy all *.csv from ../src/zone_source to codPath/zone_source
+        my $zs_src = File::Spec->catdir('..', 'src', 'zone_source');
+        my $zs_dst = File::Spec->catdir($config{codPath}, 'zone_source');
+        make_path($zs_dst) unless -d $zs_dst;
+
+        if (-d $zs_src) {
+            my $count = dircopy($zs_src, $zs_dst);
+            print "Copied $count zone_source files\n" if $count;
+        }
 
         print "Finished copying files. Building mod.ff...\n";
 
-        # Rebuild the mod.ff
-        $cmd = '"'.$config{codPath}.'\bin\linker_pc.exe" -language english -compress -cleanup mod';
-        $path = '"'.$config{codPath}.'\bin"';
-        $cmd = '.\makeFF.bat '.$path;
-        system($cmd) == 0 or die "system $cmd failed: $?";
+        # NOTE: Do *NOT* delete 'zone' or its files.  It contains critical files
+        # for C0D4 to run, like all the maps, etc.  the mod.ff gets *added* to it, not replaces zone.
+        # Could perhaps remove mod.ff *only* before rebuild.
+        # print "Cleaned previous zone/ directory\n";
 
-        # Copy mod.ff to the mod folder
-        $source = ' "'.$config{codPath}.'\zone\english" ';
-        $file = 'mod.ff ';
-        $destination = ' "'.$config{modPath}.'" ';
-        $cmd = $copyCmd.$source.$destination.$file.$switches;
-        $cmd =~ s!\\!\/!g;
-        # for robocopy, a byte-shifted return code of 2 or less is success
-        system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
+        my $bin_dir     = File::Spec->catdir($config{codPath}, 'bin');
+        my $linker_exe  = File::Spec->catfile($bin_dir, 'linker_pc.exe');
+
+        print $bin_dir;
+        print $linker_exe;
+
+        unless (-f $linker_exe) {
+            die "Error: linker_pc.exe not found at $linker_exe\n";
+        }
+
+        my $original_cwd = Cwd::cwd();
+
+        # Change to the bin directory (the linker expects this)
+        chdir($bin_dir) or die "Cannot chdir to $bin_dir: $!";
+
+        # Use the dedicated 32-bit prefix
+        my $wine_prefix = "$ENV{HOME}/.wine_cod4";
+
+        # my $cmd = qq{WINEPREFIX="$wine_prefix" wine "$linker_exe" -language english -compress -cleanup mod};
+        my $cmd = qq{WINEPREFIX="$wine_prefix" wine "$linker_exe" -language english -compress -cleanup -verbose mod};
+
+        print "Running linker with 32-bit prefix:\n$cmd\n";
+
+        system($cmd) == 0 
+            or die "linker_pc.exe failed with code $? (check Wine output above)\n";
+
+        # Return to original directory
+        chdir($original_cwd);
+
+        # Copy the resulting mod.ff to the mod folder
+        my $ff_src = File::Spec->catdir($config{codPath}, 'zone', 'english');
+        my $ff_dst = $config{modPath};
+        make_path($ff_dst) unless -d $ff_dst;
+
+        # Copy only mod.ff
+        my $modff = File::Spec->catfile($ff_src, 'mod.ff');
+        if (-f $modff) {
+            copy($modff, File::Spec->catfile($ff_dst, 'mod.ff')) 
+                or die "Failed to copy mod.ff: $!";
+        } else {
+            die "mod.ff was not created in $ff_src\n";
+        }
 
         report "Rebuilt mod.ff\n";
         print "Finished building the mod.ff fastfile. The rumble errors are harmless.\n";
@@ -1617,72 +1695,112 @@ sub rebuildMod()
 sub installConfig()
 {
     if ($installConfig) {
-        my $copyCmd = 'robocopy ';
-        my $switches = '/COPYALL /NFL /NDL /NJH  /NJS ';
-        my $source = "";
-        my $file = "";
-        my $destination = "";
-        my $cmd = "";
+        make_path($config{modPath}) unless -d $config{modPath};
 
         foreach my $file (@{$config{configFiles}}) {
-            $file =~ m/(\w*).cfg/;
-            $base = $1;
-            $cfg = "../src/$file";
-            unless (-e $cfg) {
-                $default = "../src/$base".'_default.cfg';
-                open(R, "<$default") or die "can't open file: $!";
-                my $contents = do { local $/; <R> };
-                close(R);
-                open(W, ">$cfg") or die "can't open file: $!";
-                print W $contents;
-                close(W);
+            my $build_cfg   = File::Spec->catfile($config{projectPath}.'/trunk', 'build', $file);
+
+            # Better base extraction: remove .cfg extension
+            my ($base) = $file =~ /^(.+?)\.cfg$/i;
+            my $default_cfg = File::Spec->catfile($config{projectPath}.'/trunk', 'src', $base . '_default.cfg');
+
+            # === DEBUG (you can remove later) ===
+            print "Processing: $file\n";
+            print "  Build file : $build_cfg\n";
+            print "  Default    : $default_cfg\n";
+
+            # If build/ version doesn't exist yet, create it from default
+            unless (-e $build_cfg) {
+                if (-f $default_cfg) {
+                    copy($default_cfg, $build_cfg)
+                        or die "Failed to copy $default_cfg → $build_cfg: $!";
+                    print "  ✓ Created $build_cfg from default\n";
+                } 
+                else {
+                    warn "  ⚠ Default not found: $default_cfg\n";
+                    next;
+                }
             }
-            $source = '..\src ';
-            $file = $file.' ';
-            $destination = ' "'.$config{modPath}.'" ';
-            $cmd = $copyCmd.$source.$destination.$file.$switches;
-            $cmd =~ s!\\!\/!g;
-            # for robocopy, a byte-shifted return code of 3 or less is success
-            system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-#             report "Installed $file to $config{modPath}\n";
+
+            # Copy from build/ to the mod folder
+            if (-f $build_cfg) {
+                my $dest = File::Spec->catfile($config{modPath}, $file);
+                copy($build_cfg, $dest)
+                    or die "Failed to copy $build_cfg → $dest: $!";
+                print "  ✓ Installed $file to mod folder\n";
+            }
         }
-    } else {
+
+        print "Installed config files to $config{modPath}\n";
+    } 
+    else {
         print "We do not need to install config files.\n";
     }
 }
 
+# sub installConfig()
+# {
+#     if ($installConfig) {
+#         make_path($config{modPath}) unless -d $config{modPath};
+
+#         foreach my $file (@{$config{configFiles}}) {
+#             my $cfg = File::Spec->catfile('..', 'src', $file);
+
+#             # Create default if missing
+#             unless (-e $cfg) {
+#                 my ($base) = $file =~ /^(\w+)/;
+#                 my $default = File::Spec->catfile('..', 'src', $base . '_default.cfg');
+
+#                 if (-f $default) {
+#                     copy($default, $cfg) or die "Failed to create $cfg from default: $!";
+#                     print "Created $file from default\n";
+#                 } else {
+#                     warn "Default file not found: $default\n";
+#                 }
+#             }
+
+#             # Copy to modPath
+#             if (-f $cfg) {
+#                 copy($cfg, File::Spec->catfile($config{modPath}, $file))
+#                     or die "Failed to copy $file to mod folder: $!";
+#             }
+#         }
+
+#         # report "Installed config files to $config{modPath}\n";   # uncomment if desired
+#     } else {
+#         print "We do not need to install config files.\n";
+#     }
+# }
+
 sub installBatchFiles()
 {
     if ($installBatchFiles) {
-        my $copyCmd = 'robocopy ';
-        my $switches = '/COPYALL /NFL /NDL /NJH  /NJS ';
-        my $source = "";
-        my $file = "";
-        my $destination = "";
-        my $cmd = "";
+        make_path($config{modPath}) unless -d $config{modPath};
 
         my @batchFiles = ('playMod.bat', 'host.bat', 'join.bat');
+
         foreach my $file (@batchFiles) {
-            $file =~ m/(\w*).bat/;
-            $base = $1;
-            $bat = "../src/$file";
+            my $bat = File::Spec->catfile('..', 'src', $file);
+
+            # Create default if missing
             unless (-e $bat) {
-                $default = "../src/$base".'_default.bat';
-                open(R, "<$default") or die "can't open file: $!";
-                my $contents = do { local $/; <R> };
-                close(R);
-                open(W, ">$bat") or die "can't open file: $!";
-                print W $contents;
-                close(W);
+                my ($base) = $file =~ /^(\w+)/;
+                my $default = File::Spec->catfile('..', 'src', $base . '_default.bat');
+
+                if (-f $default) {
+                    copy($default, $bat) or die "Failed to create $bat from default: $!";
+                    print "Created $file from default\n";
+                } else {
+                    warn "Default file not found: $default\n";
+                }
             }
-            $source = '..\src ';
-            $file = $file.' ';
-            $destination = ' "'.$config{modPath}.'" ';
-            $cmd = $copyCmd.$source.$destination.$file.$switches;
-            $cmd =~ s!\\!\/!g;
-            # for robocopy, a byte-shifted return code of 2 or less is success
-            system($cmd) / 256 <= 3 or die "system $cmd failed: $?";
-            report "Installed $file to $config{modPath}\n";
+
+            # Copy to modPath
+            if (-f $bat) {
+                copy($bat, File::Spec->catfile($config{modPath}, $file))
+                    or die "Failed to copy $file to mod folder: $!";
+                report "Installed $file to $config{modPath}\n";
+            }
         }
     } else {
         print "We do not need to install batch files.\n";

@@ -1,12 +1,25 @@
 # Ignore SVN metadata directories
 .svn/
-.code-workspace
 
 # Ignore build/output directories (adjust as needed)
-build/
+# build/
 dist/
 bin/
 obj/
+
+# Ignore the entire 'local' folder and everything inside it
+# local/
+# But do NOT ignore the readme.md file inside it
+#!local/readme.md
+
+# Track the directory itself
+!/trunk/local/
+
+# Ignore all files inside trunk/local
+/trunk/local/*
+
+# But do not ignore readme.md
+!/trunk/local/readme.md
 
 # Ignore editor/IDE files
 .vscode/
@@ -14,6 +27,9 @@ obj/
 *.suo
 *.user
 *.log
+*.code-workspace
+.env
+_private*
 
 # Ignore OS-specific files
 .DS_Store

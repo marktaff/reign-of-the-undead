@@ -1,0 +1,183 @@
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> winecfg
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> wine dxdiag
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> winetricks directx9
+Executing cd /usr/bin
+winetricks latest version check update disabled in the Debian package for privacy reasons.
+You may enable it by setting WINETRICKS_LATEST_VERSION_CHECK=enabled or creating /home/mark/.config/winetricks/enable-latest-version-check
+------------------------------------------------------
+warning: You are using a 64-bit WINEPREFIX. Note that many verbs only install 32-bit versions of packages. If you encounter problems, please retest in a clean 32-bit WINEPREFIX before reporting a bug.
+------------------------------------------------------
+Using winetricks 20250102 - sha256sum: 9df4af038f04c753f3b0b02817cf60a51d8eac32357d070c45dfd139b93bd3f5 with wine-10.0 (Ubuntu 10.0~repack-6ubuntu1) and WINEARCH=win64
+Executing w_do_call directx9
+------------------------------------------------------
+warning: You are using a 64-bit WINEPREFIX. Note that many verbs only install 32-bit versions of packages. If you encounter problems, please retest in a clean 32-bit WINEPREFIX before reporting a bug.
+------------------------------------------------------
+Executing load_directx9 
+------------------------------------------------------
+warning: directx9 is deprecated. Please install individual directx components (e.g., `/usr/bin/winetricks d3dx9`) instead.
+------------------------------------------------------
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> wine directx_enduser.exe
+Application could not be started, or no application associated with the specified file.
+ShellExecuteEx failed: File not found.
+
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> wine dxdiag
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> wine ../dxwebsetup.exe 
+wine: Unhandled page fault on read access to 1A0A00EE at address 01008B39 (thread 014c), starting debugger...
+0154:fixme:dbghelp:elf_search_auxv can't find symbol in module
+0154:fixme:dbghelp:elf_search_auxv can't find symbol in module
+0154:fixme:dbghelp_dwarf:compute_location Only supporting one reg (ebp/22 -> -2)
+0154:fixme:dbghelp_dwarf:compute_location Only supporting one reg (ebp/22 -> -2)
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> export WINEARCH=win32
+export WINEPREFIX=~/wineprefix_cod4
+winecfg
+wine: created the configuration directory '/home/mark/wineprefix_cod4'
+004c:err:ole:StdMarshalImpl_MarshalInterface Failed to create ifstub, hr 0x80004002
+004c:err:ole:CoMarshalInterface Failed to marshal the interface {6d5140c1-7436-11ce-8034-00aa006009fa}, hr 0x80004002
+004c:err:ole:apartment_get_local_server_stream Failed: 0x80004002
+0054:err:ole:StdMarshalImpl_MarshalInterface Failed to create ifstub, hr 0x80004002
+0054:err:ole:CoMarshalInterface Failed to marshal the interface {6d5140c1-7436-11ce-8034-00aa006009fa}, hr 0x80004002
+0054:err:ole:apartment_get_local_server_stream Failed: 0x80004002
+0054:err:ole:start_rpcss Failed to open RpcSs service
+002c:err:setupapi:do_file_copyW Unsupported style(s) 0x10
+002c:err:setupapi:do_file_copyW Unsupported style(s) 0x10
+00f8:err:setupapi:do_file_copyW Unsupported style(s) 0x10
+002c:err:setupapi:do_file_copyW Unsupported style(s) 0x10
+00f8:err:setupapi:do_file_copyW Unsupported style(s) 0x10
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> winetricks d3dx9
+Executing cd /usr/bin
+winetricks latest version check update disabled in the Debian package for privacy reasons.
+You may enable it by setting WINETRICKS_LATEST_VERSION_CHECK=enabled or creating /home/mark/.config/winetricks/enable-latest-version-check
+Using winetricks 20250102 - sha256sum: 9df4af038f04c753f3b0b02817cf60a51d8eac32357d070c45dfd139b93bd3f5 with wine-10.0 (Ubuntu 10.0~repack-6ubuntu1) and WINEARCH=win32
+Executing w_do_call d3dx9
+Executing load_d3dx9 
+Executing mkdir -p /home/mark/.cache/winetricks/directx9
+Executing cd /home/mark/.cache/winetricks/directx9
+Downloading https://files.holarse-linuxgaming.de/mirrors/microsoft/directx_Jun2010_redist.exe to /home/mark/.cache/winetricks/directx9
+--2026-04-01 10:59:41--  https://files.holarse-linuxgaming.de/mirrors/microsoft/directx_Jun2010_redist.exe
+Resolving files.holarse-linuxgaming.de (files.holarse-linuxgaming.de)... 168.119.139.26, 2a01:4f8:251:363::2
+Connecting to files.holarse-linuxgaming.de (files.holarse-linuxgaming.de)|168.119.139.26|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 100271992 (96M) [application/octet-stream]
+Saving to: ‘directx_Jun2010_redist.exe’
+
+directx_Jun2010_redist.exe                                  100%[===========================================================================================================================================>]  95.63M  23.4MB/s    in 5.6s    
+
+2026-04-01 10:59:47 (17.2 MB/s) - ‘directx_Jun2010_redist.exe’ saved [100271992/100271992]
+
+Executing cd /home/mark/.wine/drive_c/Program Files (x86)/Activision/Call of Duty 4 - Modern Warfare/bin
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp -L -F *d3dx9*x86* /home/mark/.cache/winetricks/directx9/directx_Jun2010_redist.exe
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2005_d3dx9_25_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2005_d3dx9_25_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2006_d3dx9_30_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2006_d3dx9_30_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2007_d3dx9_33_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2007_d3dx9_33_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2005_d3dx9_27_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2005_d3dx9_27_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2007_d3dx9_35_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2007_d3dx9_35_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2008_d3dx9_39_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2008_d3dx9_39_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2009_d3dx9_42_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2009_d3dx9_42_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/dec2005_d3dx9_28_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/dec2005_d3dx9_28_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/dec2006_d3dx9_32_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/dec2006_d3dx9_32_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/feb2005_d3dx9_24_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/feb2005_d3dx9_24_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/feb2006_d3dx9_29_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/feb2006_d3dx9_29_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2005_d3dx9_26_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2005_d3dx9_26_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2007_d3dx9_34_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2007_d3dx9_34_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2008_d3dx9_38_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2008_d3dx9_38_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2010_d3dx9_43_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2010_d3dx9_43_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2008_d3dx9_37_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2008_d3dx9_37_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2009_d3dx9_41_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2009_d3dx9_41_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2007_d3dx9_36_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2007_d3dx9_36_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2008_d3dx9_40_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2008_d3dx9_40_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx9*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/oct2006_d3dx9_31_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/oct2006_d3dx9_31_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Using native override for following DLLs: d3dx9_24 d3dx9_25 d3dx9_26 d3dx9_27 d3dx9_28 d3dx9_29 d3dx9_30
+Executing wine C:\windows\regedit.exe C:\windows\Temp\override-dll.reg
+Using native override for following DLLs: d3dx9_31 d3dx9_32 d3dx9_33 d3dx9_34 d3dx9_35 d3dx9_36 d3dx9_37
+Executing wine C:\windows\regedit.exe C:\windows\Temp\override-dll.reg
+Using native override for following DLLs: d3dx9_38 d3dx9_39 d3dx9_40 d3dx9_41 d3dx9_42 d3dx9_43
+Executing wine C:\windows\regedit.exe C:\windows\Temp\override-dll.reg
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> wine dxdiag
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> winetricks d3dx10
+Executing cd /usr/bin
+winetricks latest version check update disabled in the Debian package for privacy reasons.
+You may enable it by setting WINETRICKS_LATEST_VERSION_CHECK=enabled or creating /home/mark/.config/winetricks/enable-latest-version-check
+Using winetricks 20250102 - sha256sum: 9df4af038f04c753f3b0b02817cf60a51d8eac32357d070c45dfd139b93bd3f5 with wine-10.0 (Ubuntu 10.0~repack-6ubuntu1) and WINEARCH=win32
+Executing w_do_call d3dx10
+Executing load_d3dx10 
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp -L -F *d3dx10*x86* /home/mark/.cache/winetricks/directx9/directx_Jun2010_redist.exe
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2007_d3dx10_33_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/apr2007_d3dx10_33_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2007_d3dx10_35_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2007_d3dx10_35_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2008_d3dx10_39_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2008_d3dx10_39_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2009_d3dx10_42_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/aug2009_d3dx10_42_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/dec2006_d3dx10_00_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/dec2006_d3dx10_00_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2007_d3dx10_34_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2007_d3dx10_34_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2008_d3dx10_38_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2008_d3dx10_38_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2010_d3dx10_43_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/jun2010_d3dx10_43_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2008_d3dx10_37_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2008_d3dx10_37_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2009_d3dx10_41_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/mar2009_d3dx10_41_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2007_d3dx10_36_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2007_d3dx10_36_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Executing cabextract -q -d /home/mark/wineprefix_cod4/dosdevices/c:/windows/system32 -L -F d3dx10*.dll /home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2008_d3dx10_40_x86.cab
+/home/mark/wineprefix_cod4/dosdevices/c:/windows/temp/nov2008_d3dx10_40_x86.cab: WARNING; possible 5960 extra bytes at end of file.
+Using native override for following DLLs: d3dx10_33 d3dx10_34 d3dx10_35 d3dx10_36 d3dx10_37
+Executing wine C:\windows\regedit.exe C:\windows\Temp\override-dll.reg
+Using native override for following DLLs: d3dx10_38 d3dx10_39 d3dx10_40 d3dx10_41 d3dx10_42 d3dx10_43
+Executing wine C:\windows\regedit.exe C:\windows\Temp\override-dll.reg
+mark@pacifica:...Call of Duty 4 - Modern Warfare/bin> 
+
+
+Maybe version 1.0.255 ?? Found in multiplayer
+CoD4 console:
+----- Initializing Renderer ----
+----- Client Initialization Complete -----
+Attempting 44 kHz 16 bit [Windows default] sound
+----- R_Init -----
+Getting Direct3D 9 interface...
+Pixel shader version is 3.0
+Vertex shader version is 3.0
+Shader model 2.0 code path is available.
+Shader model 3.0 code path is available.
+Using Shader model 3.0 code path because it is the best available path on this hardware.
+Attempting 1024 x 768 fullscreen with 32 bpp at 60 hz
+Game window successfully created.
+Using 4x anti-aliasing
+Creating Direct3D device...
+Com_TouchMemory: 0 msec. Using sum: 0
+Loading fastfile code_post_gfx
+Loading fastfile ui
+Loading fastfile common
+Initializing render targets...
+Requested frame buffer to be 24-bit color with 8-bit alpha
+DirectX returned a frame buffer that is 24-bit color with 8-bit alpha
+Initializing static model cache...
+Initializing dynamic buffers...
+Initializing particle cloud buffer...
+
+
+ERROR: Could not find zone 'C:\Program Files (x86)\Activision\Call of Duty 4 - Modern Warfare\zone\english\code_post_gfx.ff'
