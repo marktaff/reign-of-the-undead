@@ -239,6 +239,7 @@ upgradeHud(points)
         hud_score.glowColor = (.1, .9, .2);
         hud_score settext("+"+points);
     } else {
+        // zero or < 0 points
         hud_score.glowColor = (.9, .1, .2);
         hud_score setvalue(points);
     }

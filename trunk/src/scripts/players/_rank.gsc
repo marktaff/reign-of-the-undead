@@ -297,7 +297,12 @@ onPlayerConnect()
 
         // Initial upgrade point bonus for prestige level
         if (!self.hasPreviouslyJoined) {
-            scripts\players\_players::incUpgradePoints(int(75 * prestige));
+            // BUG: Fixed.  If prestige is 0, then bonus points is 0. This puts a red '0' on game join
+            // in the center of the HUD for every player that hasn't prestiged yet.
+            // Don't give a useless bonus.
+            if (prestige > 0) {
+                scripts\players\_players::incUpgradePoints(int(75 * prestige));
+            }
         }
     //}
 //         self thread doDemote();

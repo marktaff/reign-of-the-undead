@@ -1500,7 +1500,7 @@ incUpgradePoints(inc)
     if (!isDefined(self)) {return;}
 
     if (!isDefined(self.points)) {
-        errorPrint("self.points is indefined for " + self.name);
+        errorPrint("self.points is undefined for " + self.name);
         return;
     }
 

@@ -331,21 +331,22 @@ wander()
         self.goalWp = self.myWaypoint;
 //         self.goalWp = 108; /// temp HACK
 
+        // devel: limit wander iterations to 300 to avoid infinite loops
         while (count < 300) {
             count++;
             // get a goal waypoint if required
-            if (self.goalWp == self.myWaypoint) {iPrintLnBold("New Goal!");}
+            if (self.goalWp == self.myWaypoint) {iPrintLnBold("New Goal Waypoint!");}
             while (self.goalWp == self.myWaypoint) {
                 self.goalWp = randomInt(level.Wp.size);
             }
             if (self.pathNodes.size == 0) {
                 self.pathNodes = AStarNew(self.myWaypoint, self.goalWp);
-                noticePrint("path from: " + self.myWaypoint + " to: " + self.goalWp);
+                noticePrint("bot: path from: " + self.myWaypoint + " to: " + self.goalWp);
                 path = "";
                 for (i=self.pathNodes.size - 1; i>=0; i--) {
                     path = path + " " + self.pathNodes[i];
                 }
-                noticePrint(path);
+                noticePrint("bot: path: " + path);
             }
             // pop the next wp to head towards off the stack
             self.nextWp = self.pathNodes[self.pathNodes.size - 1];
@@ -353,7 +354,7 @@ wander()
 
 //             iPrintLnBold("my: " + self.myWaypoint + " next: " + self.nextWp + " goal: " + self.goalWp);
             self.pathType = pathType(self.myWaypoint, self.nextWp);
-            noticePrint("self.pathType: " + self.pathType);
+            noticePrint("bot: self.pathType: " + self.pathType);
             if (self.pathType == level.PATH_CLAMPED) {
                 self clamped();
                 self move();
@@ -390,6 +391,7 @@ wander()
             }
         }
         iPrintLnBold("Done Wandering!");
+        noticePrint("bot: done wandering");
     }
 }
 
@@ -1286,9 +1288,11 @@ cacheMovement(movement)
 
 printMovementCacheDistribution()
 {
+    // prob not needed for DEPLOY
+    noticePrint("bot: printing movement cache");
     for (i=0; i<level.movementCache.size; i++) {
         count = level.movementCache[i].size;
-        noticePrint(i + ":" + count);
+        noticePrint("bot: " + i + ":" + count);
     }
 }
 
