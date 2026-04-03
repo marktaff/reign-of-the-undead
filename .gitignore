@@ -6,6 +6,8 @@
 dist/
 bin/
 obj/
+master_maps/
+
 # Ignore everything inside build
 /trunk/build/*
 # But do not ignore the build directory itself

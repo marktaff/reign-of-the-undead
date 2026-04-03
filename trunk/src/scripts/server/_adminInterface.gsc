@@ -326,7 +326,7 @@ validateSelectedPlayer()
 //  50:00 Debug: alive: 14 active: 16 down: 2
 //
 //
-// player indexes change as players are removed fromt he players array.  player
+// player indexes change as players are removed from the players array.  player
 // entity numbers are fairly constant, but *may* change when a player leaves and
 // rejoins then game.  Seems the game assigns the lowest available entity number
 // to a joining player, which may have previously belonged to them, or to another
@@ -847,8 +847,8 @@ getPlayerStatus(player)
 
     if ((isDefined(player.isDown)) && (player.isDown)) {return "Down";}
     else if( player.sessionstate == "playing" )        {return "Playing";}
-    else if( player.sessionstate == "dead" )    {return "Dead";}
-    else                                        {return "Spectating";}
+    else if( player.sessionstate == "dead" )           {return "Dead";}
+    else                                               {return "Spectating";}
 }
 
 

@@ -1,0 +1,28 @@
+{
+  "maps": [
+    {
+      "codeName": "mp_vacant",
+      "englishName": "Vacant (Stock)",
+      "listingImage": "https://example.com/vacant.jpg",
+      "desc": "A stock Call of Duty 4 map adapted for Reign of the Undead.",
+      "author": "Infinity Ward",
+      "authorContact": "support@infinityward.com",
+      "blacklisted": true,
+      "status": "broken",
+      "statusReason": "Crashes, map exceeds limit of 1000 xmodels.",
+      "testedAgainst": ["2.2.0", "2.2.1", "2.2.2"]
+    },
+    {
+      "codeName": "mp_surv_tunnel",
+      "englishName": "Tunnel",
+      "listingImage": "https://example.com/surv_tunnel.jpg",
+      "desc": "A custom map for Reign of the Undead.",
+      "author": "[RSD]Andy",
+      "authorContact": "www.rsd-clan.de",
+      "blacklisted": false,
+      "status": "works",
+      "statusReason": "Map loads, zombies spawn, and wander. Everything seems OK-ish.",
+      "testedAgainst": ["2.2.2", "HEAD"]
+    }
+  ]
+}

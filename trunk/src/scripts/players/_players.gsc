@@ -873,23 +873,98 @@ printPlayersData()
 
     players = level.players;
     if (players.size == 0) {return;}
-    header = "name                   index playerNumber    guid                    active alive down bot spectating";
-    debugPrint(header, "val");
-    for (i=0; i<players.size; i++) {
+
+    nameHeader = "name";
+    indexHeader = "index";
+    playerNumberHeader = "playerNumber";
+    guidHeader = "guid";
+    activeHeader = "active";
+    aliveHeader = "alive";
+    downHeader = "down";
+    botHeader = "bot";
+    spectatingHeader = "spectating";
+
+    maxName = nameHeader.size;
+    maxIndex = indexHeader.size;
+    maxPlayerNumber = playerNumberHeader.size;
+    maxGuid = guidHeader.size;
+    maxActive = activeHeader.size;
+    maxAlive = aliveHeader.size;
+    maxDown = downHeader.size;
+    maxBot = botHeader.size;
+    maxSpectating = spectatingHeader.size;
+
+    for (i = 0; i < players.size; i++) {
         if (!isDefined(players[i])) {continue;}
-        name = leftPad(players[i].name, " ", 20);
-        index = i;
-        number = players[i] getEntityNumber();
-        guid = players[i] getGuid();
-        active = players[i].isActive;
-        alive =  players[i].isAlive;
-        spectating = players[i].isSpectating;
-        down = players[i].isDown;
-        if (!isDefined(down)) { down = "undef";}
-        bot = players[i].isBot;
-        line = name + " \t" + index + " \t" + number + " " + guid + " \t" + active + " \t" + alive + " \t" + down + " \t" + bot + "\t" + spectating;
+
+        p = players[i];
+        if (p.name.size > maxName) {maxName = p.name.size;}
+
+        indexValue = i;
+        indexLength = (indexValue + "").size;
+        if (indexLength > maxIndex) {maxIndex = indexLength;}
+
+        playerNum = p getEntityNumber();
+        playerNumLength = (playerNum + "").size;
+        if (playerNumLength > maxPlayerNumber) {maxPlayerNumber = playerNumLength;}
+
+        playerGuid = p getGuid();
+        if (playerGuid.size > maxGuid) {maxGuid = playerGuid.size;}
+
+        activeValue = p.isActive + "";
+        if (activeValue.size > maxActive) {maxActive = activeValue.size;}
+
+        aliveValue = p.isAlive + "";
+        if (aliveValue.size > maxAlive) {maxAlive = aliveValue.size;}
+
+        downValue = p.isDown;
+        if (!isDefined(downValue)) {downValue = "undef";}
+        downStr = downValue + "";
+        if (downStr.size > maxDown) {maxDown = downStr.size;}
+
+        botValue = p.isBot + "";
+        if (botValue.size > maxBot) {maxBot = botValue.size;}
+
+        spectatingValue = p.isSpectating + "";
+        if (spectatingValue.size > maxSpectating) {maxSpectating = spectatingValue.size;}
+    }
+
+    colSep = "  ";
+
+    headerLine = leftPad(nameHeader, " ", maxName) + colSep
+               + leftPad(indexHeader, " ", maxIndex) + colSep
+               + leftPad(playerNumberHeader, " ", maxPlayerNumber) + colSep
+               + leftPad(guidHeader, " ", maxGuid) + colSep
+               + leftPad(activeHeader, " ", maxActive) + colSep
+               + leftPad(aliveHeader, " ", maxAlive) + colSep
+               + leftPad(downHeader, " ", maxDown) + colSep
+               + leftPad(botHeader, " ", maxBot) + colSep
+               + leftPad(spectatingHeader, " ", maxSpectating);
+
+    debugPrint(headerLine, "val");
+
+    for (i = 0; i < players.size; i++) {
+        if (!isDefined(players[i])) {continue;}
+
+        p = players[i];
+        name = leftPad(p.name, " ", maxName);
+        index = leftPad(i + "", " ", maxIndex);
+        playerNumber = leftPad((p getEntityNumber()) + "", " ", maxPlayerNumber);
+        guid = leftPad((p getGuid()) + "", " ", maxGuid);
+        active = leftPad((p.isActive + ""), " ", maxActive);
+        alive = leftPad((p.isAlive + ""), " ", maxAlive);
+        down = p.isDown;
+        if (!isDefined(down)) {down = "undef";}
+        down = leftPad(down + "", " ", maxDown);
+        bot = leftPad((p.isBot + ""), " ", maxBot);
+        spectating = leftPad((p.isSpectating + ""), " ", maxSpectating);
+
+        line = name + colSep + index + colSep + playerNumber + colSep + guid + colSep
+             + active + colSep + alive + colSep + down + colSep + bot + colSep + spectating;
+
         debugPrint(line, "val");
     }
+
     alive = level.alivePlayers;
     active = level.activePlayers;
     down = active - alive;

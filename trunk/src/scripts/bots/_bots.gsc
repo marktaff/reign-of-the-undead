@@ -686,11 +686,16 @@ zomWaitToBeTriggered()
     // 17th most-called function (1% of all function calls).
     // Do *not* put a function entrance debugPrint statement here!
 
+    debugPrint("Zombie at " + self.origin + " checking for players", "val");
     for (i=0; i<level.players.size; i++) {
         player = level.players[i];
+        debugPrint("Checking player " + player.name + " at " + player.origin + ", distance: " + distance(self.origin, player.origin), "val");
         if (self canSeeTarget(player)) {
+            debugPrint("Zombie can see player " + player.name + ", triggering!", "val");
             self zomGoTriggered();
             break;
+        } else {
+            debugPrint("Zombie cannot see player " + player.name, "val");
         }
     }
 }

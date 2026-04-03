@@ -308,6 +308,9 @@ wander()
 
     if (level.waypointsInvalid) {
         // use direct method
+        // @todo This is probably the old zombiescript.gsc method, and *must* be 
+        //   maintained for maps w/o waypoints, though it could potentially be improved.
+        //   Lots of issues w/zombies glitching inside stuff, "floating" up stairs, etc.
     } else {
         noticePrint("Wandering!");
         count = 0;
@@ -316,7 +319,10 @@ wander()
         self.status = level.BOT_WANDERING;
         noticePrint("self.origin: " + self.origin + " self.mover.origin: " + self.mover.origin);
         self.myWaypoint = nearestWaypoints(self.origin, 1)[0];
-        self.myWaypoint = 67; /// temp HACK
+        if (!isDefined(self.myWaypoint) || self.myWaypoint < 0 || self.myWaypoint >= level.Wp.size) {
+            errorPrint("Invalid myWaypoint: " + self.myWaypoint + ", waypoints size: " + level.Wp.size);
+            return;
+        }
         /// temp HACK, jump bot to its first waypoint
         wait 3;
         self enqueueMovement(level.Wp[self.myWaypoint].origin, 0.05, self.angles);

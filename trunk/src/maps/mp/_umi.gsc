@@ -1104,9 +1104,19 @@ loadWaypoints()
         // load external waypoints
         waypointsLoaded = loadExternalWaypoints();
     }
+    if (waypointsLoaded) {
+        debugPrint("External waypoints loaded: " + waypointsLoaded, "val", level.lowVerbosity);
+    } else {
+        debugPrint("No external waypoints found, attempting to load internal waypoints.", "val", level.lowVerbosity);
+    }
     if (!waypointsLoaded) {
         // load internal waypoints
         waypointsLoaded = loadInternalWaypoints();
+        if (waypointsLoaded){
+            debugPrint("Internal waypoints loaded: " + waypointsLoaded, "val", level.lowVerbosity);
+        } else {
+            debugPrint("No internal waypoints found.", "val", level.lowVerbosity);
+        }
     }
 
     if (waypointsLoaded) {

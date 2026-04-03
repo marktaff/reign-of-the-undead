@@ -57,6 +57,12 @@ sudo apt update
 sudo apt install code
 ```
 
+Install VS Code extensions (Ctrl+P, then paste, then \<enter\>):
+```
+# *.gsc syntax highlighting. https://marketplace.visualstudio.com/items?itemName=se2dev.cod-sense
+ext install se2dev.cod-sense
+```
+
 > Note: Notepad is **not** sufficient. Wordpad is not a real text editor.
 
 ### Kompare
@@ -66,6 +72,12 @@ Useful for viewing unified diff files (`.diff`).
 sudo apt update
 sudo apt install kompare
 ```
+
+### 3rd Party CoD4 tools
+
+*Untested*
+
+[Many tools by Tom Crowley](https://tom-crowley.co.uk/downloads/).  Of particular interest are Tom IWIViewer, Tom IWI & DDS Converter, Tom FastFile Extractor, Tom xAnim Extractor, TomXmodelUtils v1.
 
 ### GIMP
 For editing raster images (textures, etc.).

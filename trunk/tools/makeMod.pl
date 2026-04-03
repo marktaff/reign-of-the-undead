@@ -1275,6 +1275,7 @@ sub doInitialBuild()
 
 sub buildNonDebugScriptFile
 {
+    # print "in buildNonDebugScriptFile()\n";
     # Make sure path to new file exists
     my $cwd = Cwd::cwd();
     my $newpath = $cwd;
@@ -1282,6 +1283,7 @@ sub buildNonDebugScriptFile
     unless (-d $newpath) {make_path($newpath);}
 
     # Read in source file
+    # print "Processing: $cwd $_ $newpath\n";
     my $file = $_;
     open(R, "<$file") or die "can't open file: $!";
     # Open (create) the non-debug version of the file
@@ -1327,12 +1329,19 @@ sub buildNonDebugScriptFile
         }
 
         if ($removeLine) {
-#             print "Removed: $line";
+            # print "Removed: $line";
             $line = "\n";
             unless ($inMultiline) {$removeLine = 0;}
+        } else {
+            # debug
+            # print "Kept: $line";
         }
         print W $line;
     }
+    # print "before R\n";
+    # print "R";
+    # print "before W\n";
+    # print "W";
     close(R);
     close(W);
 }
@@ -1352,10 +1361,13 @@ sub deleteFile
 
 sub prepareNonDebugBuild()
 {
+    # print "in prepareNonDebugBuild()\n";
     my $cwd = Cwd::cwd();
 
     # Use proper cross-platform path handling
     my $non_debug_dir = File::Spec->catdir('non_debug', 'scripts');
+
+    # print "$non_debug_dir\n";
 
     # Remove the non_debug/scripts directory if it exists (like rd /S /Q)
     if (-d $non_debug_dir) {
@@ -1371,7 +1383,7 @@ sub prepareNonDebugBuild()
     # Original path to source scripts (cross-platform)
     my $source_path = File::Spec->catdir('..', 'src', 'scripts');
 
-    print "Preparing non-debug scripts from $source_path ...\n";
+    # print "Preparing non-debug scripts from $source_path ...\n";
 
     # Walk the directory tree and process script files
     # (assuming your &selectScriptFiles subroutine already exists)
@@ -1452,12 +1464,13 @@ sub buildIwdFiles()
 
     # ====================== Server Scripts ======================
     if ($rebuildServerScripts) {
-        if ($opt_d) {   # debug version
+        # Temp invert truth to force debug build
+        if (!$opt_d) {   # debug version
             my @folders = ('../src/custom_scripts', '../src/maps', '../src/scripts');
             $build_iwd->('rotu_svr_scripts.iwd', \@folders, "debug version of rotu_svr_scripts.iwd");
         } else {        # non-debug
             prepareNonDebugBuild();
-            my @folders = ('../src/custom_scripts', '../src/maps', './non_debug/scripts');
+            my @folders = ('../src/custom_scripts', '../src/maps', '../build/non_debug/scripts');
             $build_iwd->('rotu_svr_scripts.iwd', \@folders, "non-debug version of rotu_svr_scripts.iwd");
         }
     } else {
@@ -1595,7 +1608,9 @@ sub findChanges()
         elsif ($file =~ /(?:playMod|host|join)\.(?:bat|sh)$/) {
             $installBatchFiles = 1;
         }
-        $installBatchFiles = 1;
+        # temp hack to force actions 
+        # $installBatchFiles = 1;
+        # $rebuildServerScripts = 1;
 
         # Update the map with the new digest
         $map{$key} = $digest;

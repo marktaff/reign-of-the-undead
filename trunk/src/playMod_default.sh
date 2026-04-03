@@ -49,8 +49,18 @@ cd "$(dirname "$0")"/../../
 #   developer and developer_script should be 0 for regular games, but must be 1 to use the UMI Editor
 #   exec server.cfg loads all of the various *.cfg files
 #   devmap sets the name of the map to load when the server starts
-# Note: Adjust the path to iw3mp.exe if necessary.  Wine?
-wine "./iw3mp.exe" +set fs_game "mods/rotudev" +set sv_punkbuster 0 +set developer 0 +set developer_script 0 +set g_gametype "surv" +exec server.cfg +devmap mp_surv_testmap
+
+WINEPREFIX=~/.wine_cod4
+wine "./iw3mp.exe" \
+  +set fs_game "mods/rotudev" \
+  +set sv_punkbuster "0" \
+  +set dedicated 0 \
+  +set developer 0 \
+  +set developer_script 0 \
+  +set g_gametype "surv" \
+  +exec server.cfg \
+  +devmap mp_surv_testmap
+#   +devmap mp_surv_pharaoh\'s_tomb
 
 # If run from command line, change back to original folder
 # (Optional, since script ends here)
